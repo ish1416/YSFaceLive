@@ -169,106 +169,69 @@ public class ActivationActivity extends AppCompatActivity implements View.OnClic
         @Override
         public void onClick(View v) {
 
-            switch (v.getId()) {
-                case R.id.btnHWID: {
-                    FileChooser fileChooser = new FileChooser(ActivationActivity.this, "Select folder", FileChooser.DialogType.SELECT_DIRECTORY, mLastFile);
-                    FileChooser.FileSelectionCallback callback = new FileChooser.FileSelectionCallback() {
+            int id = v.getId();
+            if (id == R.id.btnHWID) {
+                FileChooser fileChooser = new FileChooser(ActivationActivity.this, "Select folder", FileChooser.DialogType.SELECT_DIRECTORY, mLastFile);
+                FileChooser.FileSelectionCallback callback = new FileChooser.FileSelectionCallback() {
 
-                        @Override
-                        public void onSelect(File file) {
-                            //Do something with the selected file
-                            Log.e(TAG, "file path: " + file.getPath());
-                            mLastFile = file;
+                    @Override
+                    public void onSelect(File file) {
+                        //Do something with the selected file
+                        Log.e(TAG, "file path: " + file.getPath());
+                        mLastFile = file;
 
-                            try {
-                                Base.saveStringToFile(mContext, file.getPath() + "/hwid.txt", mHWID);
-                                Toast.makeText(getBaseContext(), "File saved successfully!",
-                                        Toast.LENGTH_SHORT).show();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-
+                        try {
+                            Base.saveStringToFile(mContext, file.getPath() + "/hwid.txt", mHWID);
+                            Toast.makeText(getBaseContext(), "File saved successfully!",
+                                    Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                    };
-                    fileChooser.show(callback);
 
-                    break;
-                }
-                case R.id.btnLicense: {
-                    FileChooser fileChooser = new FileChooser(ActivationActivity.this, "Select license file", FileChooser.DialogType.SELECT_FILE, mLastFile);
-                    FileChooser.FileSelectionCallback callback = new FileChooser.FileSelectionCallback() {
+                    }
+                };
+                fileChooser.show(callback);
+            } else if (id == R.id.btnLicense) {
+                FileChooser fileChooser = new FileChooser(ActivationActivity.this, "Select license file", FileChooser.DialogType.SELECT_FILE, mLastFile);
+                FileChooser.FileSelectionCallback callback = new FileChooser.FileSelectionCallback() {
 
-                        @Override
-                        public void onSelect(File file) {
-                            //Do something with the selected file
-                            Log.e(TAG, "file path: " + file.getPath());
-                            mLastFile = file;
+                    @Override
+                    public void onSelect(File file) {
+                        //Do something with the selected file
+                        Log.e(TAG, "file path: " + file.getPath());
+                        mLastFile = file;
 
-                            try {
-                                String licenseStr = Base.getStringFromFile(file.getPath());
-                                Log.e(TAG, "licenseStr: " + licenseStr);
-
-//                                Log.e(TAG, "setActivation: " + activated);
-//
-//                                if (activated != ErrorInfo.MOK) {
-//                                    AlertDialog.Builder alertBuilder = new AlertDialog.Builder(mContext);
-//                                    alertBuilder.setTitle("Warning").setMessage("Activation Failed!").setPositiveButton(android.R.string.ok, null).show();
-//                                } else {
-//                                    Base.saveStringToFile(mContext, Base.getAppDir(mContext) + "/license.txt", licenseStr);
-//                                    Intent intent = new Intent(mContext, CameraActivity.class);
-//                                    startActivity(intent);
-//                                    finish();
-//                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                        try {
+                            String licenseStr = Base.getStringFromFile(file.getPath());
+                            Log.e(TAG, "licenseStr: " + licenseStr);
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                    };
-                    fileChooser.show(callback);
-
-                    break;
-                }
-                case R.id.btnScan: {
-                    if(askForPermission(Manifest.permission.CAMERA, 1) == 1) {
-                        Intent intent = new Intent(this, QrCodeActivity.class);
-                        startActivityForResult(intent, 0);
                     }
-                    break;
+                };
+                fileChooser.show(callback);
+            } else if (id == R.id.btnScan) {
+                if(askForPermission(Manifest.permission.CAMERA, 1) == 1) {
+                    Intent intent = new Intent(this, QrCodeActivity.class);
+                    startActivityForResult(intent, 0);
                 }
-                case R.id.btnSendEmail: {
-                    Intent intent = new Intent(Intent.ACTION_SEND);
+            } else if (id == R.id.btnSendEmail) {
+                Intent intent = new Intent(Intent.ACTION_SEND);
 
-                    String strExportTitle = "Get License";
+                String strExportTitle = "Get License";
 
-                    intent.putExtra(Intent.EXTRA_SUBJECT, strExportTitle);
-                    intent.setType("text/plain");
-                    intent.putExtra(android.content.Intent.EXTRA_TEXT, mHWID);
-                    intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"turing311@outlook.com"});
-                    startActivity(Intent.createChooser(intent, "send to email"));
-                    break;
-                }
-                case R.id.btnSetActivate: {
-                    try {
-                        EditText editLicense = (EditText) findViewById(R.id.editLicense);
-                        String licenseStr = editLicense.getText().toString();
-                        Log.e(TAG, "licenseStr: " + licenseStr);
-
-//                        int activated = mFaceSDK.setActivation(licenseStr);
-//                        Log.e(TAG, "setActivation: " + activated);
-//
-//                        if (activated != ErrorInfo.MOK) {
-//                            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(mContext);
-//                            alertBuilder.setTitle("Warning").setMessage("Activation Failed!").setPositiveButton(android.R.string.ok, null).show();
-//                        } else {
-//                            Base.saveStringToFile(mContext, Base.getAppDir(mContext) + "/license.txt", licenseStr);
-//                            Intent intent = new Intent(mContext, CameraActivity.class);
-//                            startActivity(intent);
-//                            finish();
-//                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    break;
+                intent.putExtra(Intent.EXTRA_SUBJECT, strExportTitle);
+                intent.setType("text/plain");
+                intent.putExtra(android.content.Intent.EXTRA_TEXT, mHWID);
+                intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"turing311@outlook.com"});
+                startActivity(Intent.createChooser(intent, "send to email"));
+            } else if (id == R.id.btnSetActivate) {
+                try {
+                    EditText editLicense = (EditText) findViewById(R.id.editLicense);
+                    String licenseStr = editLicense.getText().toString();
+                    Log.e(TAG, "licenseStr: " + licenseStr);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }

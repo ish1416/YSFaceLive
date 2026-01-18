@@ -48,25 +48,21 @@ public final class CaptureActivityHandler extends Handler {
 
     @Override
     public void handleMessage(Message message) {
-        switch (message.what) {
-            case R.id.auto_focus:
-                // Log.d(TAG, "Got auto-focus message");
-                // When one auto focus pass finishes, start another. This is the closest thing to
-                // continuous AF. It does seem to hunt a bit, but I'm not sure what else to do.
-                if (mState == State.PREVIEW) {
-                    CameraManager.get().requestAutoFocus(this, R.id.auto_focus);
-                }
-                break;
-            case R.id.decode_succeeded:
-                Log.e(TAG, "Got decode succeeded message");
-                mState = State.SUCCESS;
-                mActivity.handleDecode((Result) message.obj);
-                break;
-            case R.id.decode_failed:
-                // We're decoding as fast as possible, so when one decode fails, start another.
-                mState = State.PREVIEW;
-                CameraManager.get().requestPreviewFrame(mDecodeThread.getHandler(), R.id.decode);
-                break;
+        if (message.what == R.id.auto_focus) {
+            // Log.d(TAG, "Got auto-focus message");
+            // When one auto focus pass finishes, start another. This is the closest thing to
+            // continuous AF. It does seem to hunt a bit, but I'm not sure what else to do.
+            if (mState == State.PREVIEW) {
+                CameraManager.get().requestAutoFocus(this, R.id.auto_focus);
+            }
+        } else if (message.what == R.id.decode_succeeded) {
+            Log.e(TAG, "Got decode succeeded message");
+            mState = State.SUCCESS;
+            mActivity.handleDecode((Result) message.obj);
+        } else if (message.what == R.id.decode_failed) {
+            // We're decoding as fast as possible, so when one decode fails, start another.
+            mState = State.PREVIEW;
+            CameraManager.get().requestPreviewFrame(mDecodeThread.getHandler(), R.id.decode);
         }
     }
 

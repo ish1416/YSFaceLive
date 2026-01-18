@@ -8,6 +8,17 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <!-- Government Theme Colors -->
+    <color name="gov_primary">#1565C0</color>
+    <color name="gov_primary_dark">#0D47A1</color>
+    <color name="gov_accent">#FFC107</color>
+    <color name="gov_background">#F8F9FA</color>
+    <color name="gov_text">#212121</color>
+    <color name="gov_blue">#1565C0</color>
+    <color name="gov_green">#138808</color>
+    <color name="gov_orange">#FF6200</color>
+    <color name="yellowsense_yellow">#FFD700</color>
+
     <color name="qr_code_white">#FFFFFFFF</color>
     <color name="qr_code_flashlight_bg">#66000000</color>
     <color name="qr_code_finder_mask">#80000000</color>

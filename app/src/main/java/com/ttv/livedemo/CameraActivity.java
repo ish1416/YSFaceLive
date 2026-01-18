@@ -68,6 +68,7 @@ public class CameraActivity extends AppCompatActivity {
     ImageView back;
     TextView resultView,partial;
     boolean mSwitchCamera = false;
+    boolean isNavigating = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,40 +79,74 @@ public class CameraActivity extends AppCompatActivity {
         partial=findViewById(R.id.partial);
         cameraView = (CameraView) findViewById(R.id.camera_view);
         rectanglesView = (FaceRectView) findViewById(R.id.rectanglesView);
-        hasPermission = permissionsDelegate.hasPermissions();
-
-        FaceEngine.createInstance(this);
-        if (hasPermission) {
-            FaceEngine.getInstance().init();
-            cameraView.setVisibility(View.VISIBLE);
-        } else {
-            permissionsDelegate.requestPermissions();
+        
+        // Check camera permission first
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.CAMERA}, 100);
+            return;
         }
+        
+        initializeCamera();
+    }
+    
+    private void initializeCamera() {
+        try {
+            // Show camera view immediately
+            cameraView.setVisibility(View.VISIBLE);
+            
+            hasPermission = true; // We already checked permissions
 
-        frontFotoapparat = createFotoapparat(LensPosition.FRONT);
-        backFotoapparat = createFotoapparat(LensPosition.BACK);
-        fotoapparatSwitcher = FotoapparatSwitcher.withDefault(frontFotoapparat);
-
-        View switchCameraButton = findViewById(R.id.switchCamera);
-        switchCameraButton.setVisibility(
-                canSwitchCameras()
-                        ? View.VISIBLE
-                        : View.GONE
-        );
-        switchCameraButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switchCamera();
+            // Try to initialize FaceEngine, but don't fail if it doesn't work
+            try {
+                FaceEngine.createInstance(this);
+                FaceEngine.getInstance().init();
+            } catch (Exception e) {
+                Log.e("CameraActivity", "FaceEngine init failed, continuing without it", e);
             }
-        });
 
-        resultView.setText(R.string.liveness_detection);
-        rectanglesView.setMode(0);
+            frontFotoapparat = createFotoapparat(LensPosition.FRONT);
+            backFotoapparat = createFotoapparat(LensPosition.BACK);
+            fotoapparatSwitcher = FotoapparatSwitcher.withDefault(frontFotoapparat);
+
+            View switchCameraButton = findViewById(R.id.switchCamera);
+            switchCameraButton.setVisibility(
+                    canSwitchCameras()
+                            ? View.VISIBLE
+                            : View.GONE
+            );
+            switchCameraButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    switchCamera();
+                }
+            });
+
+            resultView.setText("Position your face in the frame");
+        resultView.setTextColor(Color.WHITE);
+            partial.setText("Keep your face steady and look directly at the camera");
+        partial.setTextColor(Color.WHITE);
+            
+            // Start camera
+            if (fotoapparatSwitcher != null) {
+                fotoapparatSwitcher.start();
+            }
+        } catch (Exception e) {
+            Log.e("CameraActivity", "Camera initialization failed", e);
+            // Show error message
+            resultView.setText("Camera initialization failed");
+        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 100) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                initializeCamera();
+            } else {
+                finish(); // Close activity if camera permission denied
+            }
+        }
     }
 
     private boolean canSwitchCameras() {
@@ -153,22 +188,110 @@ public class CameraActivity extends AppCompatActivity {
                                         }
 
                                         List<FaceRectView.DrawInfo> drawInfoList = new ArrayList<>();
+                                        final boolean[] hasLiveFaceArray = {false};
+                                        final int[] faceCount = {0};
+                                        
+                                        // Handle no faces detected
+                                        if (faces.size() == 0) {
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    resultView.setText("Position your face in the frame");
+                                                    resultView.setTextColor(Color.WHITE);
+                                                }
+                                            });
+                                            rectanglesView.clearFaceInfo();
+                                            return;
+                                        }
+                                        
+                                        // Handle multiple faces
+                                        if (faces.size() > 1) {
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    resultView.setText("⚠ Multiple faces detected - show only one face");
+                                                    resultView.setTextColor(Color.YELLOW);
+                                                }
+                                            });
+                                            // Still draw rectangles for all faces but mark as invalid
+                                            for(int i = 0; i < faces.size(); i++) {
+                                                Rect rect = faceRectTransformer.adjustRect(new Rect(faces.get(i).left, faces.get(i).top, faces.get(i).right, faces.get(i).bottom));
+                                                FaceRectView.DrawInfo drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 0, Color.YELLOW, "MULTIPLE", faces.get(i).livenessScore, -1);
+                                                drawInfoList.add(drawInfo);
+                                            }
+                                            rectanglesView.clearFaceInfo();
+                                            rectanglesView.addFaceInfo(drawInfoList);
+                                            return;
+                                        }
+                                        
+                                        // Process single face
                                         for(int i = 0; i < faces.size(); i ++) {
+                                            faceCount[0]++;
                                             Rect rect = faceRectTransformer.adjustRect(new Rect(faces.get(i).left, faces.get(i).top, faces.get(i).right, faces.get(i).bottom));
 
                                             FaceRectView.DrawInfo drawInfo;
-                                            if(faces.get(i).livenessScore > 0.5)
-                                                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 1, Color.GREEN, "", faces.get(i).livenessScore, -1);
-                                            else if(faces.get(i).livenessScore < 0)
-                                                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, -1, Color.YELLOW, "", faces.get(i).livenessScore, -1);
-                                            else
-                                                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 0, Color.RED, "", faces.get(i).livenessScore, -1);
+                                            float score = faces.get(i).livenessScore;
+                                            
+                                            // Improved liveness detection logic
+                                            if(score > 0.7) { // High confidence live person
+                                                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 1, Color.GREEN, "LIVE", score, -1);
+                                                hasLiveFaceArray[0] = true;
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        resultView.setText("✓ Live Person Detected");
+                                                        resultView.setTextColor(Color.GREEN);
+                                                    }
+                                                });
+                                            } else if(score > 0.4 && score <= 0.7) { // Medium confidence - need more analysis
+                                                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, -1, Color.YELLOW, "ANALYZING", score, -1);
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        resultView.setText("⚠ Analyzing liveness...");
+                                                        resultView.setTextColor(Color.YELLOW);
+                                                    }
+                                                });
+                                            } else if(score > 0.1 && score <= 0.4) { // Low confidence - likely fake
+                                                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 0, Color.rgb(255, 165, 0), "SUSPICIOUS", score, -1);
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        resultView.setText("⚠ Suspicious - move closer or improve lighting");
+                                                        resultView.setTextColor(Color.rgb(255, 165, 0)); // Orange
+                                                    }
+                                                });
+                                            } else { // Very low confidence - fake or no proper face
+                                                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 0, Color.RED, "FAKE", score, -1);
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        resultView.setText("✗ Verification Failed - Fake detected");
+                                                        resultView.setTextColor(Color.RED);
+                                                    }
+                                                });
+                                            }
                                             drawInfo.setMaskInfo(faces.get(i).mask);
                                             drawInfoList.add(drawInfo);
                                         }
 
                                         rectanglesView.clearFaceInfo();
                                         rectanglesView.addFaceInfo(drawInfoList);
+                                        
+                                        // Only auto-navigate if we have a confirmed live face (score > 0.7)
+                                        if (hasLiveFaceArray[0] && !isNavigating) {
+                                            isNavigating = true;
+                                            new android.os.Handler().postDelayed(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    Intent intent = new Intent(CameraActivity.this, ResultActivity.class);
+                                                    intent.putExtra("isLive", hasLiveFaceArray[0]);
+                                                    intent.putExtra("score", faces.size() > 0 ? faces.get(0).livenessScore : 0.0f);
+                                                    startActivity(intent);
+                                                    finish();
+                                                }
+                                            }, 3000); // Reduced to 3 seconds for confirmed live faces
+                                        }
                                     }
                                 })
                                 .build()
@@ -195,23 +318,13 @@ public class CameraActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (hasPermission) {
-            fotoapparatSwitcher.start();
-        }
+        // Camera is started in initializeCamera()
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if(permissionsDelegate.hasPermissions() && hasPermission == false) {
-            hasPermission = true;
-
-            FaceEngine.getInstance().init();
-            fotoapparatSwitcher.start();
-            cameraView.setVisibility(View.VISIBLE);
-        } else {
-            permissionsDelegate.requestPermissions();
-        }
+        // Camera is handled in initializeCamera()
     }
 
     @Override

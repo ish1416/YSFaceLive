@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    
+    <!-- Outer Circle -->
+    <path
+        android:fillColor="@color/gov_primary"
+        android:pathData="M50,5 C75.4,5 95,24.6 95,50 C95,75.4 75.4,95 50,95 C24.6,95 5,75.4 5,50 C5,24.6 24.6,5 50,5 Z" />
+    
+    <!-- Inner Circle -->
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M50,10 C72.1,10 90,27.9 90,50 C90,72.1 72.1,90 50,90 C27.9,90 10,72.1 10,50 C10,27.9 27.9,10 50,10 Z" />
+    
+    <!-- Ashoka Chakra Center -->
+    <path
+        android:fillColor="@color/gov_primary"
+        android:pathData="M50,20 C66.6,20 80,33.4 80,50 C80,66.6 66.6,80 50,80 C33.4,80 20,66.6 20,50 C20,33.4 33.4,20 50,20 Z" />
+    
+    <!-- Chakra Spokes -->
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M50,25 L50,75 M35.9,35.9 L64.1,64.1 M25,50 L75,50 M35.9,64.1 L64.1,35.9"
+        android:strokeWidth="2" />
+    
+    <!-- Center Circle -->
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M50,45 C52.8,45 55,47.2 55,50 C55,52.8 52.8,55 50,55 C47.2,55 45,52.8 45,50 C45,47.2 47.2,45 50,45 Z" />
+    
+    <!-- Lotus Petals -->
+    <path
+        android:fillColor="@color/yellowsense_yellow"
+        android:pathData="M50,15 L45,25 L55,25 Z M85,50 L75,45 L75,55 Z M50,85 L55,75 L45,75 Z M15,50 L25,55 L25,45 Z" />
+        
+</vector>

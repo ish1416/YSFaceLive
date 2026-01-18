@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    
+    <!-- Ashoka Chakra Circle -->
+    <path
+        android:fillColor="#FF6200"
+        android:pathData="M50,10 A40,40 0 1,1 50,90 A40,40 0 1,1 50,10 Z" />
+    
+    <!-- Inner Circle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,20 A30,30 0 1,1 50,80 A30,30 0 1,1 50,20 Z" />
+    
+    <!-- Chakra Spokes -->
+    <path
+        android:fillColor="#1565C0"
+        android:strokeWidth="2"
+        android:strokeColor="#1565C0"
+        android:pathData="M50,25 L50,75 M35,35 L65,65 M25,50 L75,50 M35,65 L65,35" />
+    
+    <!-- Center Circle -->
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M50,45 A5,5 0 1,1 50,55 A5,5 0 1,1 50,45 Z" />
+        
+</vector>

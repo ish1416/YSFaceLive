@@ -3,26 +3,21 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.3"
-
+    compileSdk 34
+    
     dataBinding {
         enabled = true
     }
 
     defaultConfig {
         applicationId "com.ttv.livedemo"
-        minSdkVersion 21
-        targetSdkVersion 30
+        minSdk 21
+        targetSdk 34
         versionCode 14
         versionName "1.4"
         multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-//        ndk {
-//            abiFilters 'armeabi-v7a'
-//        }
     }
 
     buildTypes {
@@ -35,29 +30,39 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    namespace 'com.ttv.livedemo'
 }
 
 repositories {
+    google()
+    mavenCentral()
     maven { url 'https://jitpack.io' }
-    maven {
-        url 'https://alphacephei.com/maven/'
-    }
+    maven { url 'https://alphacephei.com/maven/' }
 }
 
 dependencies {
 
-    implementation 'androidx.appcompat:appcompat:1.3.1'
-    implementation 'com.google.android.material:material:1.4.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.cardview:cardview:1.0.0'
 
     implementation files('libs/ttvface.aar')
     implementation 'com.google.zxing:core:3.4.0'
-    implementation 'com.github.d-max:spots-dialog:1.1@aar'
+    implementation 'com.github.d-max:spots-dialog:1.1'
 
-//    implementation 'io.fotoapparat:facedetector:1.0.0'
     implementation 'io.fotoapparat.fotoapparat:library:1.0.4'
 
-    testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    constraints {
+        implementation('org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10') {
+            because('kotlin-stdlib-jdk7 is now part of kotlin-stdlib')
+        }
+        implementation('org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10') {
+            because('kotlin-stdlib-jdk8 is now part of kotlin-stdlib')
+        }
+    }
 }

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white"
+    android:background="@color/ys_background"
     android:fitsSystemWindows="true">
 
     <!-- Header -->
@@ -27,9 +27,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="32dp"
-            android:elevation="8dp"
+            android:elevation="4dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="8dp">
+            app:cardElevation="4dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#E0E0E0">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -49,7 +51,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/verification_complete"
-                    android:textColor="@color/gov_primary"
+                    android:textColor="@color/ys_text_primary"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:gravity="center"
@@ -62,7 +64,7 @@
                     android:text="@string/result_live"
                     android:textSize="24sp"
                     android:textStyle="bold"
-                    android:textColor="@color/gov_green"
+                    android:textColor="@color/ys_success"
                     android:gravity="center"
                     android:layout_marginBottom="12dp" />
 
@@ -73,7 +75,7 @@
                     android:text="Confidence: 85%"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    android:textColor="@color/gov_primary"
+                    android:textColor="@color/ys_primary"
                     android:gravity="center"
                     android:layout_marginBottom="20dp" />
 
@@ -83,7 +85,7 @@
                     android:layout_height="wrap_content"
                     android:text="Identity verification completed successfully"
                     android:textSize="14sp"
-                    android:textColor="@color/gov_text"
+                    android:textColor="@color/ys_text_secondary"
                     android:gravity="center"
                     android:layout_marginBottom="24dp" />
 
@@ -92,7 +94,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:background="@drawable/info_card_bg"
+                    android:background="@drawable/ys_card_background"
                     android:padding="16dp"
                     android:layout_marginBottom="24dp">
 
@@ -102,7 +104,7 @@
                         android:text="Verification Details"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        android:textColor="@color/gov_primary"
+                        android:textColor="@color/ys_text_primary"
                         android:layout_marginBottom="8dp" />
 
                     <LinearLayout
@@ -169,16 +171,18 @@
 
                 </LinearLayout>
 
-                <Button
+                <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnTryAgain"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:text="@string/try_again"
-                    android:textColor="@color/white"
+                    android:layout_height="48dp"
+                    android:text="Try Again"
+                    android:textColor="#FFFFFF"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    android:background="@drawable/gov_button_bg"
-                    android:elevation="4dp" />
+                    android:background="@drawable/modern_button_bg"
+                    android:layout_marginHorizontal="16dp"
+                    android:textAllCaps="false"
+                    style="@style/Widget.AppCompat.Button.Borderless" />
 
             </LinearLayout>
 
@@ -201,18 +205,11 @@
                 android:textSize="12sp"
                 android:alpha="0.7" />
 
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@drawable/yellowsense_logo"
-                android:layout_marginHorizontal="4dp"
-                android:scaleType="centerInside" />
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="YellowSense Technologies"
-                android:textColor="@color/yellowsense_yellow"
+                android:textColor="@color/ys_primary"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 

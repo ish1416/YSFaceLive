@@ -1,30 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#d26159</color>
-    <color name="purple_700">#d26159</color>
-    <color name="teal_200">#d26159</color>
-    <color name="teal_700">#d26159</color>
+    <color name="purple_500">#FFD700</color>
+    <color name="purple_700">#B8860B</color>
+    <color name="teal_200">#FFD700</color>
+    <color name="teal_700">#B8860B</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
     <!-- Government Theme Colors -->
+    <color name="ys_primary">#1565C0</color>
+    <color name="ys_primary_dark">#0D47A1</color>
+    <color name="ys_secondary">#FFFFFF</color>
+    <color name="ys_accent">#2196F3</color>
+    <color name="ys_text_on_primary">#FFFFFF</color>
+    <color name="ys_text_on_dark">#FFFFFF</color>
+    <color name="ys_background">#F8F9FA</color>
+    <color name="ys_surface">#FFFFFF</color>
+    <color name="ys_text_primary">#212529</color>
+    <color name="ys_text_secondary">#6C757D</color>
+    <color name="ys_success">#28A745</color>
+    <color name="ys_warning">#FFC107</color>
+    <color name="ys_error">#DC3545</color>
+
+    <!-- Legacy Colors (keeping for compatibility) -->
     <color name="gov_primary">#1565C0</color>
     <color name="gov_primary_dark">#0D47A1</color>
-    <color name="gov_accent">#FFC107</color>
+    <color name="gov_accent">#2196F3</color>
     <color name="gov_background">#F8F9FA</color>
-    <color name="gov_text">#212121</color>
+    <color name="gov_text">#212529</color>
     <color name="gov_blue">#1565C0</color>
-    <color name="gov_green">#138808</color>
-    <color name="gov_orange">#FF6200</color>
-    <color name="yellowsense_yellow">#FFD700</color>
+    <color name="gov_green">#28A745</color>
+    <color name="gov_orange">#FFC107</color>
+    <color name="yellowsense_yellow">#1565C0</color>
 
     <color name="qr_code_white">#FFFFFFFF</color>
     <color name="qr_code_flashlight_bg">#66000000</color>
     <color name="qr_code_finder_mask">#80000000</color>
     <color name="qr_code_flash_light_text_color">#66FFFFFF</color>
     <color name="qr_code_finder_frame">#FFFFFFFF</color>
-    <color name="qr_code_finder_laser">#ef8394</color>
+    <color name="qr_code_finder_laser">#FFD700</color>
 
     <color name="object_confirmed_bg_gradient_start">#40000000</color>
     <color name="object_confirmed_bg_gradient_end">#A0000000</color>

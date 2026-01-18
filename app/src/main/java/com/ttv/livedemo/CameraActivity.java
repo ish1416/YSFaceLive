@@ -290,7 +290,7 @@ public class CameraActivity extends AppCompatActivity {
                                                     startActivity(intent);
                                                     finish();
                                                 }
-                                            }, 3000); // Reduced to 3 seconds for confirmed live faces
+                                            }, 5000); // 5 seconds as requested
                                         }
                                     }
                                 })

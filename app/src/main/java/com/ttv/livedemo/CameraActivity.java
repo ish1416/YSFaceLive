@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;

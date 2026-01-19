@@ -19,7 +19,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -66,9 +68,15 @@ public class CameraActivity extends AppCompatActivity {
     private FaceRectTransformer faceRectTransformer;
 
     ImageView back;
-    TextView resultView,partial;
+    TextView resultView, partial, progressText, progressDetails;
+    ProgressBar circularProgress;
+    LinearLayout progressOverlay;
     boolean mSwitchCamera = false;
     boolean isNavigating = false;
+    
+    // Temporal Consistency Engine
+    private TemporalConsistencyEngine temporalEngine;
+    private Handler uiHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,8 +85,16 @@ public class CameraActivity extends AppCompatActivity {
 
         resultView=findViewById(R.id.resultView);
         partial=findViewById(R.id.partial);
+        progressText=findViewById(R.id.progressText);
+        progressDetails=findViewById(R.id.progressDetails);
+        circularProgress=findViewById(R.id.circularProgress);
+        progressOverlay=findViewById(R.id.progressOverlay);
         cameraView = (CameraView) findViewById(R.id.camera_view);
         rectanglesView = (FaceRectView) findViewById(R.id.rectanglesView);
+        
+        // Initialize temporal consistency engine
+        temporalEngine = new TemporalConsistencyEngine();
+        uiHandler = new Handler(Looper.getMainLooper());
         
         // Check camera permission first
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -188,14 +204,15 @@ public class CameraActivity extends AppCompatActivity {
                                         }
 
                                         List<FaceRectView.DrawInfo> drawInfoList = new ArrayList<>();
-                                        final boolean[] hasLiveFaceArray = {false};
-                                        final int[] faceCount = {0};
                                         
                                         // Handle no faces detected
                                         if (faces.size() == 0) {
+                                            // Reset temporal engine when no face detected
+                                            temporalEngine.reset();
                                             runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
+                                                    hideProgressOverlay();
                                                     resultView.setText("Position your face in the frame");
                                                     resultView.setTextColor(Color.WHITE);
                                                 }
@@ -206,9 +223,11 @@ public class CameraActivity extends AppCompatActivity {
                                         
                                         // Handle multiple faces
                                         if (faces.size() > 1) {
+                                            temporalEngine.reset();
                                             runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
+                                                    hideProgressOverlay();
                                                     resultView.setText("⚠ Multiple faces detected - show only one face");
                                                     resultView.setTextColor(Color.YELLOW);
                                                 }
@@ -224,74 +243,24 @@ public class CameraActivity extends AppCompatActivity {
                                             return;
                                         }
                                         
-                                        // Process single face
-                                        for(int i = 0; i < faces.size(); i ++) {
-                                            faceCount[0]++;
+                                        // Process single face with temporal consistency
+                                        for(int i = 0; i < faces.size(); i++) {
                                             Rect rect = faceRectTransformer.adjustRect(new Rect(faces.get(i).left, faces.get(i).top, faces.get(i).right, faces.get(i).bottom));
-
-                                            FaceRectView.DrawInfo drawInfo;
                                             float score = faces.get(i).livenessScore;
                                             
-                                        // Enhanced liveness detection logic with stricter security
-                                        if(score > 0.85) { // Much higher threshold for live person
-                                            drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 1, Color.GREEN, "LIVE", score, -1);
-                                            hasLiveFaceArray[0] = true;
-                                            runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    resultView.setText("✓ Live Person Detected - High Confidence");
-                                                    resultView.setTextColor(Color.GREEN);
-                                                }
-                                            });
-                                        } else if(score > 0.75 && score <= 0.85) { // High confidence but need verification
-                                            drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, -1, Color.YELLOW, "VERIFYING", score, -1);
-                                            runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    resultView.setText("⚠ Please blink or move your head slightly");
-                                                    resultView.setTextColor(Color.YELLOW);
-                                                }
-                                            });
-                                        } else if(score > 0.5 && score <= 0.75) { // Medium - likely photo/screen
-                                            drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 0, Color.rgb(255, 165, 0), "PHOTO DETECTED", score, -1);
-                                            runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    resultView.setText("⚠ Static image detected - Use live camera");
-                                                    resultView.setTextColor(Color.rgb(255, 165, 0));
-                                                }
-                                            });
-                                        } else { // Low confidence - definitely fake
-                                            drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 0, Color.RED, "FAKE", score, -1);
-                                            runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    resultView.setText("✗ Verification Failed - Spoof attempt detected");
-                                                    resultView.setTextColor(Color.RED);
-                                                }
-                                            });
-                                        }
-                                            drawInfo.setMaskInfo(faces.get(i).mask);
-                                            drawInfoList.add(drawInfo);
+                                            // Add frame to temporal consistency engine
+                                            TemporalConsistencyEngine.VerificationResult result = temporalEngine.addFrame(
+                                                score, 
+                                                new Rect(faces.get(i).left, faces.get(i).top, faces.get(i).right, faces.get(i).bottom),
+                                                1.0f - faces.get(i).blur // Quality score (inverse of blur)
+                                            );
+                                            
+                                            // Update UI based on temporal analysis
+                                            updateUIWithTemporalResult(result, rect, score, drawInfoList);
                                         }
 
                                         rectanglesView.clearFaceInfo();
                                         rectanglesView.addFaceInfo(drawInfoList);
-                                        
-                                        // Only auto-navigate if we have a very high confidence live face (score > 0.85)
-                                        if (hasLiveFaceArray[0] && !isNavigating) {
-                                            isNavigating = true;
-                                            new android.os.Handler().postDelayed(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    Intent intent = new Intent(CameraActivity.this, ResultActivity.class);
-                                                    intent.putExtra("isLive", hasLiveFaceArray[0]);
-                                                    intent.putExtra("score", faces.size() > 0 ? faces.get(0).livenessScore : 0.0f);
-                                                    startActivity(intent);
-                                                    finish();
-                                                }
-                                            }, 3000); // Reduced to 3 seconds for better UX
-                                        }
                                     }
                                 })
                                 .build()
@@ -354,5 +323,161 @@ public class CameraActivity extends AppCompatActivity {
         previewView.setLayoutParams(layoutParams);
         faceRectView.setLayoutParams(layoutParams);
         return layoutParams;
+    }
+    
+    /**
+     * Update UI based on temporal consistency analysis results
+     */
+    private void updateUIWithTemporalResult(TemporalConsistencyEngine.VerificationResult result, 
+                                          Rect rect, float score, List<FaceRectView.DrawInfo> drawInfoList) {
+        
+        FaceRectView.DrawInfo drawInfo;
+        
+        switch (result.status) {
+            case ANALYZING:
+                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, -1, Color.BLUE, "ANALYZING", score, -1);
+                runOnUiThread(() -> {
+                    showProgressOverlay();
+                    updateProgress(temporalEngine.getProgress(), result.message, "Please hold steady");
+                    resultView.setText("Analyzing liveness...");
+                    resultView.setTextColor(Color.BLUE);
+                });
+                break;
+                
+            case VERIFYING:
+                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 1, Color.YELLOW, "VERIFYING", score, -1);
+                runOnUiThread(() -> {
+                    showProgressOverlay();
+                    updateProgress(temporalEngine.getProgress(), result.message, 
+                        String.format("Confidence: %.0f%% | Consistency: %.0f%%", 
+                            result.averageScore * 100, result.consistencyScore * 100));
+                    resultView.setText("⚠ Verification in progress...");
+                    resultView.setTextColor(Color.YELLOW);
+                });
+                break;
+                
+            case SUCCESS:
+                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 1, Color.GREEN, "VERIFIED", score, -1);
+                runOnUiThread(() -> {
+                    hideProgressOverlay();
+                    resultView.setText("✓ Live Person Verified!");
+                    resultView.setTextColor(Color.GREEN);
+                    navigateToResults(true, result.averageScore, result.verificationDuration);
+                });
+                break;
+                
+            case FAILED_INCONSISTENT:
+                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 0, Color.RED, "INCONSISTENT", score, -1);
+                runOnUiThread(() -> {
+                    hideProgressOverlay();
+                    resultView.setText("✗ Inconsistent detection - Please try again");
+                    resultView.setTextColor(Color.RED);
+                    scheduleFailureNavigation("Inconsistent liveness detection");
+                });
+                break;
+                
+            case FAILED_ANOMALY:
+                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 0, Color.RED, "SPOOF DETECTED", score, -1);
+                runOnUiThread(() -> {
+                    hideProgressOverlay();
+                    resultView.setText("✗ Spoof attempt detected!");
+                    resultView.setTextColor(Color.RED);
+                    scheduleFailureNavigation("Spoofing attempt detected");
+                });
+                break;
+                
+            case FAILED_INSUFFICIENT:
+                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 0, Color.rgb(255, 165, 0), "POOR QUALITY", score, -1);
+                runOnUiThread(() -> {
+                    hideProgressOverlay();
+                    resultView.setText("⚠ Unable to verify - Improve lighting");
+                    resultView.setTextColor(Color.rgb(255, 165, 0));
+                    scheduleFailureNavigation("Insufficient image quality");
+                });
+                break;
+                
+            case FAILED_TIMEOUT:
+                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 0, Color.RED, "TIMEOUT", score, -1);
+                runOnUiThread(() -> {
+                    hideProgressOverlay();
+                    resultView.setText("✗ Verification timeout");
+                    resultView.setTextColor(Color.RED);
+                    scheduleFailureNavigation("Verification timeout");
+                });
+                break;
+                
+            default:
+                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 0, Color.GRAY, "UNKNOWN", score, -1);
+                break;
+        }
+        
+        drawInfoList.add(drawInfo);
+    }
+    
+    /**
+     * Show progress overlay with verification status
+     */
+    private void showProgressOverlay() {
+        if (progressOverlay != null) {
+            progressOverlay.setVisibility(View.VISIBLE);
+        }
+    }
+    
+    /**
+     * Hide progress overlay
+     */
+    private void hideProgressOverlay() {
+        if (progressOverlay != null) {
+            progressOverlay.setVisibility(View.GONE);
+        }
+    }
+    
+    /**
+     * Update progress display
+     */
+    private void updateProgress(int progress, String message, String details) {
+        if (circularProgress != null) {
+            circularProgress.setProgress(progress);
+        }
+        if (progressText != null) {
+            progressText.setText(message);
+        }
+        if (progressDetails != null) {
+            progressDetails.setText(details);
+        }
+    }
+    
+    /**
+     * Navigate to results screen with verification data
+     */
+    private void navigateToResults(boolean isLive, float averageScore, long duration) {
+        if (!isNavigating) {
+            isNavigating = true;
+            new Handler().postDelayed(() -> {
+                Intent intent = new Intent(CameraActivity.this, ResultActivity.class);
+                intent.putExtra("isLive", isLive);
+                intent.putExtra("score", averageScore);
+                intent.putExtra("duration", duration);
+                startActivity(intent);
+                finish();
+            }, 2000); // 2 second delay to show success message
+        }
+    }
+    
+    /**
+     * Schedule navigation to failure result after delay
+     */
+    private void scheduleFailureNavigation(String reason) {
+        if (!isNavigating) {
+            isNavigating = true;
+            new Handler().postDelayed(() -> {
+                Intent intent = new Intent(CameraActivity.this, ResultActivity.class);
+                intent.putExtra("isLive", false);
+                intent.putExtra("score", 0.0f);
+                intent.putExtra("reason", reason);
+                startActivity(intent);
+                finish();
+            }, 3000); // 3 second delay to show failure message
+        }
     }
 }

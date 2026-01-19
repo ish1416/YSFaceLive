@@ -63,6 +63,53 @@
 
     </LinearLayout>
 
+    <!-- Verification Progress Overlay -->
+    <LinearLayout
+        android:id="@+id/progressOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#80000000"
+        android:padding="16dp"
+        android:layout_marginTop="120dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        
+        <ProgressBar
+            android:id="@+id/circularProgress"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:progressDrawable="@drawable/circular_progress"
+            android:progress="0"
+            android:max="100"
+            style="?android:attr/progressBarStyleHorizontal" />
+        
+        <TextView
+            android:id="@+id/progressText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Analyzing..."
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"
+            android:gravity="center" />
+            
+        <TextView
+            android:id="@+id/progressDetails"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Please hold steady"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:alpha="0.8" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/resultView"
         android:layout_width="wrap_content"

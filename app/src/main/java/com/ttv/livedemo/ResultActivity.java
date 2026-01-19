@@ -17,6 +17,8 @@ public class ResultActivity extends AppCompatActivity {
 
         boolean isLive = getIntent().getBooleanExtra("isLive", false);
         float score = getIntent().getFloatExtra("score", 0.0f);
+        long duration = getIntent().getLongExtra("duration", 0);
+        String reason = getIntent().getStringExtra("reason");
         
         TextView resultText = findViewById(R.id.txtResult);
         TextView scoreText = findViewById(R.id.txtScore);
@@ -25,17 +27,23 @@ public class ResultActivity extends AppCompatActivity {
         
         if (isLive) {
             resultText.setText(R.string.result_live);
-            resultText.setTextColor(getResources().getColor(R.color.gov_green));
-            scoreText.setText(String.format("Confidence: %.1f%%", score * 100));
-            scoreText.setTextColor(getResources().getColor(R.color.gov_green));
-            statusText.setText("Identity verification successful. You are a live person.");
+            resultText.setTextColor(getResources().getColor(R.color.ys_success));
+            scoreText.setText(String.format("Confidence: %.1f%% | Duration: %.1fs", score * 100, duration / 1000.0f));
+            scoreText.setTextColor(getResources().getColor(R.color.ys_success));
+            statusText.setText("Identity verification successful. Live person confirmed with temporal consistency.");
             resultIcon.setImageResource(R.drawable.ic_done);
         } else {
             resultText.setText(R.string.result_not_live);
-            resultText.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+            resultText.setTextColor(getResources().getColor(R.color.ys_error));
             scoreText.setText(String.format("Confidence: %.1f%%", score * 100));
-            scoreText.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-            statusText.setText("Verification failed. Please try again with proper lighting.");
+            scoreText.setTextColor(getResources().getColor(R.color.ys_error));
+            
+            // Show specific failure reason
+            if (reason != null && !reason.isEmpty()) {
+                statusText.setText("Verification failed: " + reason + ". Please try again.");
+            } else {
+                statusText.setText("Verification failed. Please try again with proper lighting.");
+            }
             resultIcon.setImageResource(R.drawable.ic_stop);
         }
 

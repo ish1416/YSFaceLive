@@ -253,7 +253,7 @@ public class CameraActivity extends AppCompatActivity {
                                             TemporalConsistencyEngine.VerificationResult result = temporalEngine.addFrame(
                                                 score, 
                                                 new Rect(faces.get(i).left, faces.get(i).top, faces.get(i).right, faces.get(i).bottom),
-                                                1.0f - faces.get(i).blur // Quality score (inverse of blur)
+                                                0.8f // Default quality score since blur field not available
                                             );
                                             
                                             // Update UI based on temporal analysis

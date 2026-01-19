@@ -232,45 +232,45 @@ public class CameraActivity extends AppCompatActivity {
                                             FaceRectView.DrawInfo drawInfo;
                                             float score = faces.get(i).livenessScore;
                                             
-                                            // Improved liveness detection logic
-                                            if(score > 0.7) { // High confidence live person
-                                                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 1, Color.GREEN, "LIVE", score, -1);
-                                                hasLiveFaceArray[0] = true;
-                                                runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        resultView.setText("✓ Live Person Detected");
-                                                        resultView.setTextColor(Color.GREEN);
-                                                    }
-                                                });
-                                            } else if(score > 0.4 && score <= 0.7) { // Medium confidence - need more analysis
-                                                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, -1, Color.YELLOW, "ANALYZING", score, -1);
-                                                runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        resultView.setText("⚠ Analyzing liveness...");
-                                                        resultView.setTextColor(Color.YELLOW);
-                                                    }
-                                                });
-                                            } else if(score > 0.1 && score <= 0.4) { // Low confidence - likely fake
-                                                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 0, Color.rgb(255, 165, 0), "SUSPICIOUS", score, -1);
-                                                runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        resultView.setText("⚠ Suspicious - move closer or improve lighting");
-                                                        resultView.setTextColor(Color.rgb(255, 165, 0)); // Orange
-                                                    }
-                                                });
-                                            } else { // Very low confidence - fake or no proper face
-                                                drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 0, Color.RED, "FAKE", score, -1);
-                                                runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        resultView.setText("✗ Verification Failed - Fake detected");
-                                                        resultView.setTextColor(Color.RED);
-                                                    }
-                                                });
-                                            }
+                                        // Enhanced liveness detection logic with stricter security
+                                        if(score > 0.85) { // Much higher threshold for live person
+                                            drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 1, Color.GREEN, "LIVE", score, -1);
+                                            hasLiveFaceArray[0] = true;
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    resultView.setText("✓ Live Person Detected - High Confidence");
+                                                    resultView.setTextColor(Color.GREEN);
+                                                }
+                                            });
+                                        } else if(score > 0.75 && score <= 0.85) { // High confidence but need verification
+                                            drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, -1, Color.YELLOW, "VERIFYING", score, -1);
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    resultView.setText("⚠ Please blink or move your head slightly");
+                                                    resultView.setTextColor(Color.YELLOW);
+                                                }
+                                            });
+                                        } else if(score > 0.5 && score <= 0.75) { // Medium - likely photo/screen
+                                            drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 0, Color.rgb(255, 165, 0), "PHOTO DETECTED", score, -1);
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    resultView.setText("⚠ Static image detected - Use live camera");
+                                                    resultView.setTextColor(Color.rgb(255, 165, 0));
+                                                }
+                                            });
+                                        } else { // Low confidence - definitely fake
+                                            drawInfo = new FaceRectView.DrawInfo(rect, 0, 0, 0, Color.RED, "FAKE", score, -1);
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    resultView.setText("✗ Verification Failed - Spoof attempt detected");
+                                                    resultView.setTextColor(Color.RED);
+                                                }
+                                            });
+                                        }
                                             drawInfo.setMaskInfo(faces.get(i).mask);
                                             drawInfoList.add(drawInfo);
                                         }
@@ -278,7 +278,7 @@ public class CameraActivity extends AppCompatActivity {
                                         rectanglesView.clearFaceInfo();
                                         rectanglesView.addFaceInfo(drawInfoList);
                                         
-                                        // Only auto-navigate if we have a confirmed live face (score > 0.7)
+                                        // Only auto-navigate if we have a very high confidence live face (score > 0.85)
                                         if (hasLiveFaceArray[0] && !isNavigating) {
                                             isNavigating = true;
                                             new android.os.Handler().postDelayed(new Runnable() {
@@ -290,7 +290,7 @@ public class CameraActivity extends AppCompatActivity {
                                                     startActivity(intent);
                                                     finish();
                                                 }
-                                            }, 5000); // 5 seconds as requested
+                                            }, 3000); // Reduced to 3 seconds for better UX
                                         }
                                     }
                                 })
